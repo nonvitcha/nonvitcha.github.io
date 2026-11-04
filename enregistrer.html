@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Enregistrer ma voix - NONVITCHA</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="enregistrer.css">
+</head>
+<body>
+  <header>
+    <div class="bande"></div>
+    <a class="retour" href="index.html">← Retour</a>
+    <h1>NONVITCHA</h1>
+  </header>
+
+  <main class="studio">
+    <h2>Présente ton travail avec ta voix</h2>
+    <p class="aide">Appuie sur le bouton et parle (30 secondes au plus) : ton nom, ton métier, ton quartier.</p>
+
+    <button id="rec" class="rec">🎤</button>
+    <p id="temps" class="temps">0:00</p>
+    <p id="etat" class="etat">Appuie pour commencer</p>
+
+    <div id="resultat" class="cache">
+      <audio id="lecteur" controls></audio>
+      <button id="refaire" class="refaire">🔄 Refaire</button>
+    </div>
+  </main>
+
+  <script>
+    const bouton = document.getElementById("rec");
+    const temps = document.getElementById("temps");
+    const etat = document.getElementById("etat");
+    const resultat = document.getElementById("resultat");
+    const lecteur = document.getElementById("lecteur");
+    const refaire = document.getElementById("refaire");
+
+    const DUREE_MAX = 30;
+    let enregistreur = null;
+    let morceaux = [];
+    let flux = null;
+    let chrono = null;
+    let secondes = 0;
+
+    function afficherTemps() {
+      const m = Math.floor(secondes / 60);
+      const s = String(secondes % 60).padStart(2, "0");
+      temps.textContent = m + ":" + s;
+    }
+
+    async function demarrer() {
+      if (!navigator.mediaDevices || !window.MediaRecorder) {
+        etat.textContent = "Ton navigateur ne peut pas enregistrer. Essaie Chrome.";
+        return;
+      }
+      try {
+        flux = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (erreur) {
+        etat.textContent = "Micro refusé. Autorise le micro dans les réglages du navigateur.";
+        return;
+      }
+      morceaux = [];
+      enregistreur = new MediaRecorder(flux);
+      enregistreur.ondataavailable = (e) => morceaux.push(e.data);
+      enregistreur.onstop = terminer;
+      enregistreur.start();
+
+      secondes = 0;
+      afficherTemps();
+      bouton.classList.add("enreg");
+      bouton.textContent = "⏹️";
+      etat.textContent = "Je t'écoute... appuie pour arrêter";
+      resultat.classList.add("cache");
+
+      chrono = setInterval(() => {
+        secondes++;
+        afficherTemps();
+        if (secondes >= DUREE_MAX) arreter();
+      }, 1000);
+    }
+
+    function arreter() {
+      clearInterval(chrono);
+      if (enregistreur && enregistreur.state !== "inactive") {
+        enregistreur.stop();
+      }
+    }
+
+    function terminer() {
+      flux.getTracks().forEach((piste) => piste.stop());
+      const fichier = new Blob(morceaux, { type: enregistreur.mimeType });
+      lecteur.src = URL.createObjectURL(fichier);
+      bouton.classList.remove("enreg");
+      bouton.textContent = "🎤";
+      etat.textContent = "Écoute ton enregistrement";
+      resultat.classList.remove("cache");
+    }
+
+    bouton.addEventListener("click", () => {
+      if (enregistreur && enregistreur.state === "recording") {
+        arreter();
+      } else {
+        demarrer();
+      }
+    });
+
+    refaire.addEventListener("click", () => {
+      resultat.classList.add("cache");
+      lecteur.removeAttribute("src");
+      secondes = 0;
+      afficherTemps();
+      etat.textContent = "Appuie pour commencer";
+    });
+  </script>
+</body>
+    </html>
