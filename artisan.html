@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Fiche artisan - NONVITCHA</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="artisan.css">
+</head>
+<body>
+  <header>
+    <div class="bande"></div>
+    <a class="retour" href="index.html">← Retour</a>
+    <h1>NONVITCHA</h1>
+  </header>
+
+  <main class="fiche">
+    <div class="photo">🧑🏾</div>
+    <h2>Akossiwa</h2>
+    <p class="metier-nom">Couturière · Amegnran</p>
+    <p class="langues">Parle : Mina, Éwé, Français</p>
+
+    <button id="ecouter" class="ecouter">▶ Écouter sa voix</button>
+    <div class="onde" id="onde">
+      <span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+    <p id="message"></p>
+
+    <a class="appeler" href="tel:+22800000000">📞 Appeler</a>
+
+    <h3>Ses réalisations</h3>
+    <div class="realisations">
+      <div>👗</div><div>🧵</div><div>👚</div>
+    </div>
+  </main>
+
+  <script>
+    const bouton = document.getElementById("ecouter");
+    const onde = document.getElementById("onde");
+    const message = document.getElementById("message");
+    let enCours = false;
+
+    bouton.addEventListener("click", () => {
+      enCours = !enCours;
+      onde.classList.toggle("actif", enCours);
+      bouton.textContent = enCours ? "⏸ Pause" : "▶ Écouter sa voix";
+      message.textContent = enCours ? "Exemple : la vraie voix viendra bientôt" : "";
+    });
+  </script>
+</body>
+  </html>
