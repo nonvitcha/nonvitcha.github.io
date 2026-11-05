@@ -1,0 +1,48 @@
+.retour {
+  display: block;
+  text-align: left;
+  color: var(--creme);
+  padding: 0 16px 10px;
+  text-decoration: none;
+}
+
+.studio { padding: 24px 16px 40px; }
+
+.aide { margin: 0 0 28px; line-height: 1.4; }
+
+.rec {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 6px solid var(--indigo);
+  background: var(--ocre);
+  font-size: 4rem;
+}
+
+.enreg {
+  background: #c0392b;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+.temps { margin: 16px 0 4px; font-size: 2rem; font-weight: 700; }
+.etat { margin: 0 0 24px; min-height: 1.4em; }
+
+.cache { display: none; }
+
+audio { width: 100%; margin-bottom: 16px; }
+
+.refaire {
+  width: 100%;
+  padding: 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  background: white;
+  color: var(--indigo);
+  border: 3px solid var(--indigo);
+  border-radius: 20px;
+}
