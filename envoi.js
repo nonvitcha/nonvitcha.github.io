@@ -1,13 +1,17 @@
-// envoi.js v3 — ajoute une alerte visible et un arrêt d'urgence (timeout)
+// envoi4.js — Affiche la taille du fichier et bloque si le serveur ne répond pas
 const boutonEnvoyer = document.getElementById("envoyer");
+boutonEnvoyer.textContent = "Envoyer (V4)"; // Ça nous dira si le nouveau code est chargé
 let enEnvoi = false;
 
 async function envoyerVoix() {
   if (enEnvoi) { return; }
+  
+  // On vérifie si on a bien de l'audio
   if (!morceaux || morceaux.length === 0) {
-    alert("Aucun enregistrement. Appuie sur le micro d'abord.");
+    alert("ÉCHEC : Le fichier audio est vide. Recommence l'enregistrement.");
     return;
   }
+
   enEnvoi = true;
   boutonEnvoyer.disabled = true;
   etat.textContent = "Envoi en cours...";
@@ -18,15 +22,22 @@ async function envoyerVoix() {
   if (type.indexOf("ogg") >= 0) { ext = "ogg"; }
 
   const fichier = new Blob(morceaux, { type: type });
+  
+  // Si le fichier fait 0 octet, on s'arrête tout de suite
+  if (fichier.size === 0) {
+    alert("ÉCHEC : Le fichier pèse 0 octet. Le micro n'a rien capturé.");
+    boutonEnvoyer.disabled = false;
+    enEnvoi = false;
+    return;
+  }
+
   const formulaire = new FormData();
   formulaire.append("fileId", "unique()");
   formulaire.append("file", fichier, "voix-" + Date.now() + "." + ext);
 
   const url = ADRESSE + "/storage/buckets/" + BUCKET + "/files";
-
-  // Sécurité : si le serveur ne répond pas en 15 secondes, on arrête tout.
   const controleur = new AbortController();
-  const minuterie = setTimeout(() => controleur.abort(), 15000);
+  const minuterie = setTimeout(() => controleur.abort(), 15000); // 15 sec max
 
   try {
     const reponse = await fetch(url, {
@@ -40,7 +51,7 @@ async function envoyerVoix() {
     const texte = await reponse.text();
 
     if (!reponse.ok) {
-      let message = "Code HTTP " + reponse.status + " — " + texte;
+      let message = "Code " + reponse.status + " : " + texte;
       try {
         const json = JSON.parse(texte);
         if (json && json.message) { message = "Code " + reponse.status + " : " + json.message; }
@@ -51,17 +62,14 @@ async function envoyerVoix() {
     const donnees = JSON.parse(texte);
     localStorage.setItem("voixId", donnees["$id"]);
     etat.textContent = "Ta voix est enregistrée. Merci !";
-    boutonEnvoyer.textContent = "Envoyée ✓";
-    alert("SUCCÈS : Ta voix est enregistrée sur Appwrite !");
+    alert("SUCCÈS : Ta voix est enregistrée !");
     
   } catch (e) {
     clearTimeout(minuterie);
     boutonEnvoyer.disabled = false;
     if (e.name === "AbortError") {
-      etat.textContent = "Impossible : le serveur ne répond pas.";
-      alert("ÉCHEC : Le serveur a mis plus de 15 secondes à répondre. (Problème de connexion ?)");
+      alert("ÉCHEC : Appwrite n'a pas répondu en 15 secondes. (Problème de réseau ?)");
     } else {
-      etat.textContent = "Impossible : " + e.message;
       alert("ÉCHEC : " + e.message);
     }
   }
