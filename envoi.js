@@ -1,14 +1,11 @@
-// envoi.js — envoie la voix enregistrée vers Appwrite Storage.
-// Affiche le code HTTP et la réponse exacte d'Appwrite en cas d'échec.
-// Chargé après le script de enregistrer.html : utilise enregistreur, morceaux, etat.
-
+// envoi.js v3 — ajoute une alerte visible et un arrêt d'urgence (timeout)
 const boutonEnvoyer = document.getElementById("envoyer");
 let enEnvoi = false;
 
 async function envoyerVoix() {
   if (enEnvoi) { return; }
   if (!morceaux || morceaux.length === 0) {
-    etat.textContent = "Aucun enregistrement. Appuie sur le micro d'abord.";
+    alert("Aucun enregistrement. Appuie sur le micro d'abord.");
     return;
   }
   enEnvoi = true;
@@ -26,24 +23,27 @@ async function envoyerVoix() {
   formulaire.append("file", fichier, "voix-" + Date.now() + "." + ext);
 
   const url = ADRESSE + "/storage/buckets/" + BUCKET + "/files";
-  console.log("Envoi vers :", url);
-  console.log("Taille :", fichier.size, "octets — type :", type);
+
+  // Sécurité : si le serveur ne répond pas en 15 secondes, on arrête tout.
+  const controleur = new AbortController();
+  const minuterie = setTimeout(() => controleur.abort(), 15000);
 
   try {
     const reponse = await fetch(url, {
       method: "POST",
       headers: { "X-Appwrite-Project": PROJET },
-      body: formulaire
+      body: formulaire,
+      signal: controleur.signal
     });
-    const code = reponse.status;
+    clearTimeout(minuterie);
+
     const texte = await reponse.text();
-    console.log("Réponse Appwrite :", code, texte);
 
     if (!reponse.ok) {
-      let message = "Code HTTP " + code + " — " + texte;
+      let message = "Code HTTP " + reponse.status + " — " + texte;
       try {
         const json = JSON.parse(texte);
-        if (json && json.message) { message = "Code HTTP " + code + " — " + json.message; }
+        if (json && json.message) { message = "Code " + reponse.status + " : " + json.message; }
       } catch (ignore) {}
       throw new Error(message);
     }
@@ -52,10 +52,18 @@ async function envoyerVoix() {
     localStorage.setItem("voixId", donnees["$id"]);
     etat.textContent = "Ta voix est enregistrée. Merci !";
     boutonEnvoyer.textContent = "Envoyée ✓";
+    alert("SUCCÈS : Ta voix est enregistrée sur Appwrite !");
+    
   } catch (e) {
-    console.log("Erreur d'envoi :", e);
-    etat.textContent = "Impossible : " + e.message;
+    clearTimeout(minuterie);
     boutonEnvoyer.disabled = false;
+    if (e.name === "AbortError") {
+      etat.textContent = "Impossible : le serveur ne répond pas.";
+      alert("ÉCHEC : Le serveur a mis plus de 15 secondes à répondre. (Problème de connexion ?)");
+    } else {
+      etat.textContent = "Impossible : " + e.message;
+      alert("ÉCHEC : " + e.message);
+    }
   }
   enEnvoi = false;
 }
