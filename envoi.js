@@ -19,12 +19,15 @@ async function envoyerVoix() {
       headers: { "X-Appwrite-Project": PROJET },
       body: formulaire
     });
-    if (!reponse["ok"]) { throw new Error("Erreur " + reponse["status"]); }
+     if (!reponse["ok"]) {
+      const texte = await reponse["text"]();
+      throw new Error(reponse["status"] + " " + texte);
+     }
     const donnees = await reponse["json"]();
     localStorage.setItem("voixId", donnees["$id"]);
     etat.textContent = "Ta voix est enregistrée. Merci !";
   } catch (e) {
-    etat.textContent = "Envoi impossible. Réessaie.";
+    etat.textContent = "Impossible : " + e["message"];
   }
   enEnvoi = false;
 }
