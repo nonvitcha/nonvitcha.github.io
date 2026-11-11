@@ -2,8 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport"
-content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Enregistrer ma voix - Voix d'Artisans</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="enregistrer.css">
@@ -17,33 +16,25 @@ content="width=device-width, initial-scale=1">
 
   <main class="studio">
     <h2>Présente ton travail avec ta voix</h2>
-    <p class="aide">Appuie sur le bouton et parle
-(30 secondes au plus) : ton nom, ton métier, ton
-quartier.</p>  <button id="rec" class="rec">🖋</button>
+    <p class="aide">Appuie sur le bouton et parle (30 secondes au plus) : ton nom, ton métier, ton quartier.</p>
+<button id="rec" class="rec">&#127908;</button>
   <p id="temps" class="temps">0:00</p>
-  <p id="etat" class="etat">Appuie pour
-commencer</p>
+  <p id="etat" class="etat">Appuie pour commencer</p>
 
   <div id="resultat" class="cache">
     <audio id="lecteur" controls></audio>
-    <button id="envoyer" class="refaire">Envoyer
-ma voix</button>
-    <button id="refaire" class="refaire">Refaire</
-button>
+    <button id="envoyer" class="refaire">Envoyer ma voix</button>
+    <button id="refaire" class="refaire">Refaire</button>
     </div>
   </main>
 
   <script>
     const bouton = document.getElementById("rec");
-    const temps =
-document.getElementById("temps");
+    const temps = document.getElementById("temps");
     const etat = document.getElementById("etat");
-    const resultat =
-document.getElementById("resultat");
-    const lecteur =
-document.getElementById("lecteur");
-    const refaire =
-document.getElementById("refaire");
+    const resultat = document.getElementById("resultat");
+    const lecteur = document.getElementById("lecteur");
+    const refaire = document.getElementById("refaire");
 
     const DUREE_MAX = 30;
     let enregistreur = null;
@@ -51,37 +42,31 @@ document.getElementById("refaire");
     let flux = null;
     let chrono = null;
     let secondes = 0;
-    let enCours = false;  function afficherTemps() {
+    let enCours = false;
+  function afficherTemps() {
     const m = Math.floor(secondes / 60);
-    const s = String(secondes % 60).padStart(2,
-"0");
+    const s = String(secondes % 60).padStart(2, "0");
     temps.textContent = m + ":" + s;
   }
 
   async function demarrer() {
-    if (!navigator.mediaDevices || !
-window.MediaRecorder) {
-      etat.textContent = "Ton navigateur ne peut pas
-enregistrer. Essaie Chrome.";
+    if (!navigator.mediaDevices || !window.MediaRecorder) {
+      etat.textContent = "Ton navigateur ne peut pas enregistrer. Essaie Chrome.";
       return;
     }
     try {
-      flux = await
-navigator.mediaDevices.getUserMedia({ audio:
-true });
+      flux = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (e) {
-      etat.textContent = "Micro refusé. Autorise le
-micro dans les réglages.";
+      etat.textContent = "Micro refusé. Autorise le micro dans les réglages.";
       return;
     }
     morceaux = [];
     enregistreur = new MediaRecorder(flux);
 
-    enregistreur.addEventListener("dataavailable",
-function(e) {
+    enregistreur.addEventListener("dataavailable", function(e) {
       morceaux.push(e.data);
-    });  enregistreur.addEventListener("stop", function()
-{
+    });
+  enregistreur.addEventListener("stop", function() {
     terminer();
   });
 
@@ -91,8 +76,7 @@ function(e) {
   afficherTemps();
   bouton.classList.add("enreg");
   bouton.textContent = "Stop";
-  etat.textContent = "Je t'écoute... appuie pour
-arrêter";
+  etat.textContent = "Je t'écoute... appuie pour arrêter";
   resultat.classList.add("cache");
 
   chrono = setInterval(function() {
@@ -110,11 +94,10 @@ function arreter() {
     enregistreur.stop();
   }
   enCours = false;
-}function terminer() {
-  flux.getTracks().forEach(function(p)
-{ p.stop(); });
-  const fichier = new Blob(morceaux, { type:
-enregistreur.mimeType });
+}
+function terminer() {
+  flux.getTracks().forEach(function(p) { p.stop(); });
+  const fichier = new Blob(morceaux, { type: enregistreur.mimeType });
   const url = URL.createObjectURL(fichier);
   lecteur.setAttribute("src", url);
   bouton.classList.remove("enreg");
@@ -142,4 +125,4 @@ refaire.addEventListener("click", function() {
 <script src="reglages.js"></script>
 <script src="envoi.js"></script>
 </body>
-</html>
+  </html>
