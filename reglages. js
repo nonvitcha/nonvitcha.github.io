@@ -1,0 +1,4 @@
+const REGION = "fra";
+const PROJET = "6af3d8140001698d2c63";
+const BUCKET = "voix";
+const ADRESSE = "https://" + REGION + ".cloud.appwrite.io/v1";
